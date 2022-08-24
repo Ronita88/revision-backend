@@ -12,6 +12,7 @@ app.use(cors());
 mongoose.connect("mongodb://localhost/bags");
 // import du model Products pour la BDD
 const Product = require("./models/Product");
+const { count } = require("./models/Product");
 
 // pour poster un produits je dois créer un model
 app.post("/products", async (req, res) => {
@@ -35,6 +36,8 @@ app.get("/productslist", async (req, res) => {
     //création de la variable Products pour avoir l'ensemble des articles, qu'on va chercher d'après le model BDD Product
     //.sort permet de trier par ordre alphabétique
 
+    const filter = {}; // pour connaitre le nombre d'articles total
+
     let limit = 4;
     if (req.query.limit) {
       limit = req.query.limit;
@@ -46,15 +49,19 @@ app.get("/productslist", async (req, res) => {
     }
 
     console.log(limit);
-    console.log(skip);
-    const products = await Product.find()
+    console.log(page);
+    const products = await Product.find(filter)
       .sort({
         product_name: "asc",
         product_price: "asc",
       })
       .limit(limit)
-      .skip((page - 1) * limit);
+      .skip((page - 1) * limit)
+      .countDocument(filter);
 
+    // res.json(products); // pour retourner l'ensemble des données de la BDD
+
+    // const count = await Product.countDocuments(filter);
     res.json(products);
   } catch (error) {
     res.status(400).json({ error: error.message });
