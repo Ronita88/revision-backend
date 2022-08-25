@@ -10,64 +10,22 @@ app.use(express.json());
 app.use(cors());
 
 mongoose.connect("mongodb://localhost/bags");
-// import du model Products pour la BDD
-const Product = require("./models/Product");
-const { count } = require("./models/Product");
 
-// pour poster un produits je dois créer un model
-app.post("/products", async (req, res) => {
-  const product = req.body;
-  try {
-    const newProduct = new Product({
-      product_name: product.name,
-      product_description: product.description,
-      product_price: product.price,
-    });
-    await newProduct.save();
-    res.json({ newProduct });
-  } catch (error) {
-    res.status(400).json({ message: error.message });
-  }
-});
+// import des routes
+const productRoutes = require("./routes/product");
+app.use(productRoutes);
 
-// route read pour lire les données de la BDD bags sur mongo DB
-app.get("/productslist", async (req, res) => {
-  try {
-    //création de la variable Products pour avoir l'ensemble des articles, qu'on va chercher d'après le model BDD Product
-    //.sort permet de trier par ordre alphabétique
+const productslistRoutes = require("./routes/productslist");
+app.use(productslistRoutes);
 
-    const filter = {}; // pour connaitre le nombre d'articles total
+const signupRoutes = require("./routes/signup");
+app.use(signupRoutes);
 
-    let limit = 4;
-    if (req.query.limit) {
-      limit = req.query.limit;
-    }
+const loginRoutes = require("./routes/login");
+app.use(loginRoutes);
 
-    let page = 1;
-    if (req.query.page) {
-      page = req.query.page;
-    }
-
-    console.log(limit);
-    console.log(page);
-    const products = await Product.find(filter)
-      .sort({
-        product_name: "asc",
-        product_price: "asc",
-      })
-      .limit(limit)
-      .skip((page - 1) * limit)
-      .countDocument(filter);
-
-    // res.json(products); // pour retourner l'ensemble des données de la BDD
-
-    // const count = await Product.countDocuments(filter);
-    res.json(products);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-});
-
+// const homeRoutes = require("./routes/home");
+// app.use(home);
 app.get("/", (req, res) => {
   res.json("je suis dans ma route");
 });
